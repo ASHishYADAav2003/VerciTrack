@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from 'react';
-import { Camera, Upload, CheckCircle2, Loader2 } from 'lucide-react';
+import { Camera, Upload, CheckCircle2, Loader2, Leaf, Coffee } from 'lucide-react';
 import Link from 'next/link';
 
 export default function ScanPage() {
@@ -28,7 +28,7 @@ export default function ScanPage() {
     setTimeout(() => {
       setResult({
         batchId: 'b-' + Math.random().toString(36).substring(2, 9),
-        grade: 'Grade_A',
+        grade: 'Specialty',
         confidence: 96.5,
         txHash: '0xabc123...def456'
       });
@@ -37,18 +37,24 @@ export default function ScanPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="bg-white max-w-md w-full rounded-2xl shadow-xl overflow-hidden border border-gray-100">
-        <div className="bg-green-600 p-6 text-white text-center">
+    <div className="min-h-screen bg-stone-50 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Decorative Garden Background Elements */}
+      <div className="absolute top-10 left-10 text-amber-700/20 animate-float"><Leaf size={48} /></div>
+      <div className="absolute bottom-20 right-10 text-orange-600/20 animate-float-delayed"><Leaf size={64} /></div>
+      <div className="absolute top-1/3 left-4 text-amber-900/10 animate-float-slow"><Coffee size={100} /></div>
+      <div className="absolute bottom-1/3 right-1/4 text-orange-800/15 animate-float"><Leaf size={40} /></div>
+
+      <div className="bg-white max-w-md w-full rounded-2xl shadow-xl overflow-hidden border border-gray-100 relative z-10 animate-sway">
+        <div className="bg-amber-700 p-6 text-white text-center">
           <h2 className="text-2xl font-bold">New Quality Scan</h2>
-          <p className="text-green-100 text-sm mt-1">Capture or upload an image of the batch</p>
+          <p className="text-amber-100 text-sm mt-1">Capture or upload an image of the batch</p>
         </div>
 
         <div className="p-6 space-y-6">
           {!preview ? (
             <div 
               onClick={() => fileInputRef.current?.click()}
-              className="border-2 border-dashed border-gray-300 rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer hover:border-green-500 hover:bg-green-50 transition min-h-[250px]"
+              className="border-2 border-dashed border-gray-300 rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer hover:border-amber-500 hover:bg-amber-50 transition min-h-[250px]"
             >
               <Camera className="w-12 h-12 text-gray-400 mb-4" />
               <p className="text-gray-600 font-medium">Tap to capture or upload</p>
@@ -83,7 +89,7 @@ export default function ScanPage() {
               onClick={handleProcess}
               disabled={!file || isProcessing}
               className={`w-full py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition
-                ${!file || isProcessing ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700 shadow-md'}`}
+                ${!file || isProcessing ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-amber-700 text-white hover:bg-amber-800 shadow-md'}`}
             >
               {isProcessing ? (
                 <><Loader2 className="w-5 h-5 animate-spin" /> Processing AI & Blockchain...</>
@@ -92,13 +98,13 @@ export default function ScanPage() {
               )}
             </button>
           ) : (
-            <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4 text-center space-y-3">
-              <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto" />
+            <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 text-center space-y-3">
+              <CheckCircle2 className="w-12 h-12 text-amber-500 mx-auto" />
               <div>
                 <h3 className="font-bold text-gray-900 text-lg">Batch Graded Successfully</h3>
-                <p className="text-sm text-gray-600">Assigned: <span className="font-bold text-emerald-700">{result.grade.replace('_', ' ')} ({result.confidence}%)</span></p>
+                <p className="text-sm text-gray-600">Assigned: <span className="font-bold text-amber-700">{result.grade.replace('_', ' ')} ({result.confidence}%)</span></p>
               </div>
-              <Link href={`/batch/${result.batchId}`} className="block w-full py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700">
+              <Link href={`/batch/${result.batchId}`} className="block w-full py-2 bg-amber-700 text-white rounded-lg font-medium hover:bg-amber-800">
                 View Batch Details & QR
               </Link>
             </div>

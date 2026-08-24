@@ -1,6 +1,6 @@
-# AI-Powered Blockchain Quality Grading System Implementation Plan
+# AI-Powered Coffee Bean Quality Assessment System Implementation Plan
 
-This document outlines the technical implementation plan for a fully web-based agricultural quality grading and traceability system. The system combines Artificial Intelligence (MobileNetV3) for image-based quality grading with Blockchain technology (Base Sepolia) to permanently and securely record the results. It is designed to be accessible via standard web browsers without requiring specialized hardware.
+This document outlines the technical implementation plan for a fully web-based coffee bean quality assessment and traceability system. The system combines Artificial Intelligence (MobileNetV3) for image-based quality grading with Blockchain technology (Base Sepolia) to permanently and securely record the results. It is designed to be accessible via standard web browsers without requiring specialized hardware.
 
 ## User Review Required
 
@@ -10,7 +10,7 @@ This document outlines the technical implementation plan for a fully web-based a
 ## Open Questions
 
 > [!WARNING]
-> 1. **Specific Crop Focus**: Which specific agricultural product(s) are we starting with for the AI dataset (e.g., tomatoes, mangoes, potatoes, apples)?
+> 1. **Specific Coffee Focus**: Which specific coffee bean varieties or defect standards are we focusing on?
 > 2. **Wallet & Gas Fees**: We are using a dedicated backend relayer wallet on Base Sepolia. Do we already have this wallet set up with testnet ETH, or should we create one during the setup phase?
 > 3. **Supabase & Pinata Setup**: Do you have existing accounts/API keys for Supabase and Pinata (IPFS), or will we need to set those up as we build the backend?
 
@@ -25,7 +25,7 @@ The project will be developed across several distinct components, moving from da
 This phase focuses on the computer vision aspect of the project.
 
 #### [NEW] `ai/dataset_prep.py`
-Script to download, clean, and organize the dataset of the chosen agricultural product into `train`, `val`, and `test` folders corresponding to Grade A, B, C, and Reject.
+Script to download, clean, and organize the dataset of coffee beans into `train`, `val`, and `test` folders corresponding to Specialty, Premium, Commercial, and Reject.
 
 #### [NEW] `ai/train_mobilenet.py`
 PyTorch script utilizing transfer learning on MobileNetV3. Will include data augmentation, training loop, validation, and saving the best model state (`.pth`).
@@ -90,7 +90,7 @@ Landing page explaining the system and offering login/registration options.
 Main dashboard for authenticated users (farmers) to view their past batches and initiate new gradings.
 
 #### [NEW] `frontend/app/scan/page.tsx`
-Camera interface allowing users to capture a photo of the produce directly from their device browser. Will handle IndexedDB caching for offline support.
+Camera interface allowing users to capture a photo of the coffee beans directly from their device browser. Will handle IndexedDB caching for offline support.
 
 #### [NEW] `frontend/app/batch/[id]/page.tsx`
 Public-facing verification page that displays the detailed off-chain data and compares it against the on-chain blockchain record for authenticity.
@@ -109,6 +109,6 @@ Utility leveraging `Dexie.js` (IndexedDB wrapper) to store pending image uploads
 - **Backend API**: Write Pytest test cases to simulate image uploads, verifying that the AI responds, Supabase records the entry, and a blockchain transaction is initiated.
 
 ### Manual Verification
-- **End-to-End Flow**: Open the Next.js app on a mobile device, snap a photo of a fruit/vegetable, and trace the process: Image -> Backend -> AI Grade -> IPFS -> Supabase -> Base Sepolia -> QR Code generation.
+- **End-to-End Flow**: Open the Next.js app on a mobile device, snap a photo of a batch of coffee beans, and trace the process: Image -> Backend -> AI Grade -> IPFS -> Supabase -> Base Sepolia -> QR Code generation.
 - **QR Scanning**: Use a separate smartphone to scan the generated QR code to verify the public batch information page renders correctly.
 - **Offline Capability**: Turn off Wi-Fi/Data on the mobile device, attempt to submit a grading, verify it saves locally, turn connection back on, and verify it automatically syncs and processes.

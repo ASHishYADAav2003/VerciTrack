@@ -1,7 +1,7 @@
 {
   "name": "quality-grading-blockchain",
   "version": "1.0.0",
-  "description": "Smart contracts for agricultural quality grading",
+  "description": "Smart contracts for coffee bean quality assessment",
   "main": "index.js",
   "scripts": {
     "test": "npx hardhat test"
