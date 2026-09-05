@@ -83,9 +83,9 @@ export default function MarketplacePage() {
       await Promise.all(
         ids.map(async (id) => {
           const [core, quality, listing] = await Promise.all([
-            client.readContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: "getBatchCore" as const, args: [id] as [string] }),
-            client.readContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: "getBatchQuality" as const, args: [id] as [string] }).catch(() => null),
-            client.readContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: "getBatchListing" as const, args: [id] as [string] }).catch(() => null),
+            client.readContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI as any, functionName: "getBatchCore" as const, args: [id] as [string] }),
+            client.readContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI as any, functionName: "getBatchQuality" as const, args: [id] as [string] }).catch(() => null),
+            client.readContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI as any, functionName: "getBatchListing" as const, args: [id] as [string] }).catch(() => null),
           ]);
 
           const c = core as readonly [string, string, string, string, string, string, boolean];

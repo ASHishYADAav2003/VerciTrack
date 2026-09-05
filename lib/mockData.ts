@@ -31,7 +31,7 @@ export type CoffeeBatch = {
   coffeeType?: string;
   status: string;
   approvalStatus?: string;
-  qualityStatus?: string;
+  qualityStatus?: "Passed" | "Caution" | "Failed" | string;
   pdfHash?: string;
   certificateUrl?: string;
   humidity?: number;
@@ -43,4 +43,6 @@ export type CoffeeBatch = {
   description?: string;
   image?: string;
   txHash?: string;
+  producerDeclaration?: string;
+  traceabilityHistory?: { stage: string; timestamp: string; actor: string; note?: string }[];
 };

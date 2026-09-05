@@ -76,8 +76,8 @@ describe("CoffeeTraceability", () => {
       );
     }
 
-    owner = await provider.getSigner(signers[0]);
-    buyer = await provider.getSigner(signers[1]);
+    owner = signers[0];
+    buyer = signers[1];
 
     // Load compiled artifact (run `npx hardhat compile` first)
     const artifact = JSON.parse(readFileSync(ARTIFACT_PATH, "utf8"));

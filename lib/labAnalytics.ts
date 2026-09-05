@@ -971,7 +971,7 @@ export function computeSimilarityForBatch(targetId: string, records: LabRecord[]
         closestParams,
         origin:       r.origin,
         coffeeType:    r.coffeeType,
-      };
+      } as SimilarBatch | null;
     })
     .filter((r): r is SimilarBatch => r !== null)
     .sort((a, b) => b.similarity - a.similarity)

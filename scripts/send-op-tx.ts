@@ -1,5 +1,6 @@
 import { network } from "hardhat";
 
+// @ts-ignore
 const { viem } = await network.create({
   network: "hardhatOp",
   chainType: "op",
