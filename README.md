@@ -111,9 +111,6 @@ scripts/          — Blockchain deploy scripts
 The local Hardhat network resets every time `npm run chain` is restarted — all on-chain data is lost. Off-chain data (lab history, ML training records, analytics) persists in the `data/` folder between sessions.
 
 For a permanent deployment the contract can be deployed to a public testnet (e.g. Sepolia) using `npm run deploy:sepolia` with a configured `.env.local`.
-
 ---
 
-## Author
 
-Hana Voca — hhv23@bath.ac.uk
