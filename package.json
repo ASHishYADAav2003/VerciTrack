@@ -1,0 +1,47 @@
+{
+  "name": "coffee-traceability-prototype",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "chain": "bash scripts/start-chain.sh",
+    "deploy:sepolia": "npx hardhat compile && npx tsx scripts/deploy-sepolia.ts",
+    "test:contract": "npx hardhat compile && npx hardhat test"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.100.1",
+    "@prisma/client": "^6.4.1",
+    "caniuse-lite": "^1.0.30001802",
+    "dotenv": "^17.4.2",
+    "js-sha256": "^0.11.1",
+    "jsqr": "^1.4.0",
+    "nanoid": "^3.3.7",
+    "next": "^15.3.4",
+    "pdfjs-dist": "^6.0.227",
+    "prisma": "^6.4.1",
+    "qrcode.react": "^4.2.0",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-ignition": "^3.1.6",
+    "@nomicfoundation/hardhat-toolbox-viem": "^5.0.7",
+    "@types/node": "^22.19.19",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "autoprefixer": "^10.5.0",
+    "eslint": "^9",
+    "eslint-config-next": "^15.3.3",
+    "forge-std": "github:foundry-rs/forge-std#v1.9.4",
+    "hardhat": "^3.9.1",
+    "postcss": "^8.5.15",
+    "tailwindcss": "^3.4.19",
+    "tsx": "^4.22.4",
+    "typescript": "~6.0.3",
+    "viem": "^2.52.2"
+  },
+  "type": "module"
+}

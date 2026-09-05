@@ -1,0 +1,108 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String   @id @default(cuid())
+  role          String   // "farmer" or "admin"
+  name          String   @unique
+  farmName      String?
+  location      String?
+  walletAddress String?
+  passwordHash  String?
+  status        String   @default("approved") // "pending", "approved", "rejected"
+  createdAt     DateTime @default(now())
+}
+
+model Batch {
+  id              String   @id @default(cuid())
+  batchId         String   @unique // The blockchain format ID e.g., HON-PRZ-...
+  coffeeType      String
+  origin          String
+  farmerName      String
+  harvestYear     Int?
+  description     String?
+  image           String?
+  weight          String?
+  price           Float?
+  
+  // Status and Approvals
+  approvalStatus  String   @default("pending") // "pending", "approved", "rejected"
+  qualityStatus   String   @default("pending") // "passed", "failed", "caution"
+  qualityScore    Int?
+  qualityTier     String?
+  producerDeclaration String?
+  certificateUrl  String?
+  pdfHash         String?
+  
+  // Lab Metrics
+  humidity        Float?
+  hmf             Float?
+  diastase        Float?
+  freeAcidity     Float?
+  proline         Float?
+  conductivity    Float?
+  fructoseGlucose Float?
+  reducingSugars  Float?
+  sucrose         Float?
+  ash             Float?
+  isotopicDiff    Float?
+  colour          Float?
+  residuesClean   Boolean?
+
+  txHash          String?
+  approvedAt      DateTime?
+  createdAt       DateTime @default(now())
+
+  orders          Order[]
+}
+
+model Order {
+  id        String   @id @default(cuid())
+  batchId   String
+  batch     Batch    @relation(fields: [batchId], references: [batchId])
+  customer  String
+  quantity  Int
+  price     Float
+  status    String   @default("processing") // processing, shipped, delivered
+  createdAt DateTime @default(now())
+}
+
+model CoffeeType {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  code        String   @unique
+  description String?
+  isKnown     Boolean  @default(true)
+}
+
+model LabRecord {
+  id              String   @id @default(cuid())
+  batchId         String   @unique
+  coffeeType      String
+  humidity        Float?
+  hmf             Float?
+  diastase        Float?
+  freeAcidity     Float?
+  proline         Float?
+  conductivity    Float?
+  fructoseGlucose Float?
+  reducingSugars  Float?
+  sucrose         Float?
+  ash             Float?
+  isotopicDiff    Float?
+  colour          Float?
+  residuesClean   Boolean?
+  isAuthentic     Boolean  @default(true)
+  createdAt       DateTime @default(now())
+}
+
+model Setting {
+  key   String @id
+  value String
+}
