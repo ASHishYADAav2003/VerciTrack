@@ -1,5 +1,6 @@
 # HAV Coffee Traceability System
 
+
 A full-stack prototype that tracks coffee batches from farm to market using blockchain, AI, and machine learning. Built to improve transparency, authenticity verification, and quality assurance in the coffee supply chain.
 
 ---
