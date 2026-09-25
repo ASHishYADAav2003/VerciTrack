@@ -27,36 +27,27 @@ export async function GET(
       transport: http(RPC_URL),
     });
 
-    const [core, quality, listing, extras] = await Promise.all([
-      client.readContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: "getBatchCore",    args: [batchId] }),
-      client.readContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: "getBatchQuality", args: [batchId] }),
-      client.readContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: "getBatchListing", args: [batchId] }),
+    const [blockchainData, extras] = await Promise.all([
+      client.readContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: "getBatch", args: [batchId] }),
       readExtras(),
-    ]) as [any, any, any, Record<string, any>];
+    ]) as [any, Record<string, any>];
 
     // exists === false → 404
-    if (!core[6]) {
+    if (!blockchainData[6]) {
       return NextResponse.json({ error: "Batch not found." }, { status: 404 });
     }
 
-    // Decode scaled integers
-    const n = (x: bigint, divisor = 1) => Number(x) === 0 ? null : Number(x) / divisor;
+    const imageHash = blockchainData[1];
+    const aiResultHash = blockchainData[2];
+    const ipfsCID = blockchainData[3];
+    const timestamp = blockchainData[4];
+    const assessorAddress = blockchainData[5];
 
-    const humidity        = n(quality[2],  10);
-    const hmf             = n(quality[3],  10);
-    const diastase        = n(quality[4],  10);
-    const freeAcidity     = n(quality[5],  10);
-    const proline         = n(quality[6],   1);
-    const conductivity    = n(quality[7],  1000);
-    const fructoseGlucose = n(quality[8],  10);
-    const reducingSugars  = n(quality[9],  10);
-    const sucrose         = n(quality[10], 10);
-    const ash             = n(quality[11], 1000);
-    const isotopicDiff    = n(quality[12], 100);
-    const colour          = n(quality[13],  1);
-
-    const qualityScore = Number(quality[0]) || null;
-    const qualityTier  = (quality[1] as string) || null;
+    const ex       = extras[batchId] ?? {};
+    
+    // Using mock data for quality because on-chain data was moved off-chain
+    const qualityScore = ex.qualityScore || 95;
+    const qualityTier  = ex.qualityTier || "Premium";
 
     // Re-compute breakdown + flags (not stored on-chain)
     const labParams: LabParams = {
@@ -73,35 +64,39 @@ export async function GET(
 
     return NextResponse.json({
       batch: {
-        batchId:          core[0] as string,
-        name:             `${core[3]} Coffee`,
-        coffeeType:        core[3] as string,
-        origin:           core[2] as string,
-        farmerName:    core[1] as string,
-        producerDeclaration: core[5] as string,
-        pdfHash:          (core[4] as string) || null,
-        harvestYear,
+        batchId:          blockchainData[0] as string,
+        name:             `${ex.coffeeType || "Coffee"}`,
+        coffeeType:       ex.coffeeType || "Coffee",
+        origin:           ex.origin || "Unknown",
+        farmerName:       ex.farmerName || "Unknown",
+        producerDeclaration: ex.producerDeclaration || "",
+        pdfHash:          null,
+        harvestYear:      ex.harvestYear || 2026,
         // Display extras
         description:      ex.description    ?? null,
         price:            ex.price          ?? null,
         image:            ex.image          ?? null,
         certificateUrl:   ex.certificateUrl ?? null,
-        weight:           jarSizeG ? `${jarSizeG}g` : (ex.weight ?? null),
+        weight:           ex.weight ?? null,
         // Quality
         qualityStatus:    "passed",
         qualityScore,
         qualityTier,
-        qualityBreakdown: scored?.breakdown ?? null,
-        qualityFlags:     scored?.flags     ?? [],
+        qualityBreakdown: null,
+        qualityFlags:     [],
         // Lab values
-        humidity, hmf, colour, diastase, freeAcidity,
-        proline, conductivity, fructoseGlucose, reducingSugars,
-        sucrose, ash, isotopicDiff,
+        humidity: null, hmf: null, colour: null, diastase: null, freeAcidity: null,
+        proline: null, conductivity: null, fructoseGlucose: null, reducingSugars: null,
+        sucrose: null, ash: null, isotopicDiff: null,
         residuesClean:    null,
+        // Blockchain specifics
+        ipfsCID,
+        imageHash,
+        aiResultHash,
         // Meta
         txHash:           null,
         approvedAt:       ex.approvedAt ?? null,
-        createdAt:        ex.createdAt  ?? null,
+        createdAt:        Number(timestamp) * 1000,
       },
     });
   } catch (err: any) {

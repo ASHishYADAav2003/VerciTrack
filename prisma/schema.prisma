@@ -10,7 +10,8 @@ generator client {
 model User {
   id            String   @id @default(cuid())
   role          String   // "farmer" or "admin"
-  name          String   @unique
+  name          String
+  email         String   @unique
   farmName      String?
   location      String?
   walletAddress String?

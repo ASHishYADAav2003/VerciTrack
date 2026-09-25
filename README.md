@@ -56,20 +56,32 @@ Get a free API key at [console.anthropic.com](https://console.anthropic.com). Wi
 
 **3. Start the local blockchain** — keep this terminal open
 ```bash
-npm run chain
+npx hardhat node
+```
+*Note: In another terminal, compile and deploy contracts using `npx tsx scripts/deploy.ts`*
+
+**4. Start the AI Classification Service** — in a second terminal
+```bash
+cd ai-service
+# On Windows:
+.\venv\Scripts\Activate.ps1
+# On Mac/Linux:
+source venv/bin/activate
+
+uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
-**4. Start the web app** — in a second terminal
+**5. Start the web app** — in a third terminal
 ```bash
 npm run dev
 ```
 
-**5. Open in browser**
+**6. Open in browser**
 ```
 http://localhost:3000
 ```
 
-**6. Configure MetaMask**
+**7. Configure MetaMask**
 
 | Setting | Value |
 |---|---|

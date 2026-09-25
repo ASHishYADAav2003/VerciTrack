@@ -1,22 +1,5 @@
 import { NextResponse } from "next/server";
-import path from "path";
-import fs from "fs/promises";
-
-type Role = "admin" | "farmer" | "customer";
-type Status = "approved" | "pending" | "rejected";
-
-type User = {
-  id: string;
-  name: string;
-  email: string;
-  password: string;
-  role: Role;
-  status: Status;
-  address?: string;
-  farmName?: string;
-  location?: string;
-  walletAddress?: string;
-};
+import { db } from "@/lib/db";
 
 export async function POST(req: Request) {
   try {
@@ -30,15 +13,11 @@ export async function POST(req: Request) {
       );
     }
 
-    const safeRole: Role = role || "customer";
-    const filePath = path.join(process.cwd(), "data", "users.json");
+    const safeRole = role || "customer";
 
-    const file = await fs.readFile(filePath, "utf-8");
-    const users: User[] = JSON.parse(file);
-
-    const existingUser = users.find(
-      (user) => user.email.toLowerCase() === email.toLowerCase()
-    );
+    const existingUser = await db.user.findUnique({
+      where: { email: email.toLowerCase() },
+    });
 
     if (existingUser) {
       return NextResponse.json(
@@ -47,22 +26,18 @@ export async function POST(req: Request) {
       );
     }
 
-    const newUser: User = {
-      id: `${safeRole}-${Date.now()}`,
-      name,
-      email,
-      password,
-      role: safeRole,
-      status: safeRole === "farmer" ? "pending" : "approved",
-      address: body.address,
-      farmName: body.farmName,
-      location: body.location,
-      walletAddress: body.walletAddress,
-    };
-
-    users.push(newUser);
-
-    await fs.writeFile(filePath, JSON.stringify(users, null, 2));
+    const newUser = await db.user.create({
+      data: {
+        name,
+        email: email.toLowerCase(),
+        passwordHash: password, // Note: No hashing for simplicity, matching original logic
+        role: safeRole,
+        status: safeRole === "farmer" ? "pending" : "approved",
+        farmName: body.farmName,
+        location: body.location,
+        walletAddress: body.walletAddress,
+      },
+    });
 
     return NextResponse.json({
       message:
@@ -77,7 +52,8 @@ export async function POST(req: Request) {
         status: newUser.status,
       },
     });
-  } catch {
+  } catch (err: any) {
+    console.error(err);
     return NextResponse.json(
       { error: "Registration failed." },
       { status: 500 }

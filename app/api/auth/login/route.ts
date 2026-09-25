@@ -1,18 +1,5 @@
 import { NextResponse } from "next/server";
-import path from "path";
-import fs from "fs/promises";
-
-type UserRole = "admin" | "farmer" | "customer";
-type UserStatus = "approved" | "pending" | "rejected";
-
-type User = {
-  id: string;
-  name: string;
-  email: string;
-  password: string;
-  role: UserRole;
-  status?: UserStatus;
-};
+import { db } from "@/lib/db";
 
 export async function POST(req: Request) {
   try {
@@ -25,17 +12,11 @@ export async function POST(req: Request) {
       );
     }
 
-    const filePath = path.join(process.cwd(), "data", "users.json");
-    const file = await fs.readFile(filePath, "utf-8");
-    const users: User[] = JSON.parse(file);
+    const user = await db.user.findUnique({
+      where: { email: email.toLowerCase() },
+    });
 
-    const user = users.find(
-      (u) =>
-        u.email.toLowerCase() === email.toLowerCase() &&
-        u.password === password
-    );
-
-    if (!user) {
+    if (!user || user.passwordHash !== password) {
       return NextResponse.json(
         { error: "Invalid email or password." },
         { status: 401 }
@@ -82,7 +63,8 @@ export async function POST(req: Request) {
     });
 
     return response;
-  } catch {
+  } catch (err: any) {
+    console.error(err);
     return NextResponse.json(
       { error: "Login failed." },
       { status: 500 }

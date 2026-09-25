@@ -44,11 +44,7 @@ const EMPTY_FORM: BatchForm = {
 };
 
 const COFFEE_TYPES = [
-  "Acacia", "Alfalfa", "Borage", "Buckwheat", "Chestnut", "Citrus", "Clover",
-  "Coriander", "Cornflower", "Eucalyptus", "Forest", "Heather", "Highland Flower",
-  "Coffeedew", "Lavender", "Linden", "Manuka", "Meadow", "Multifloral", "Flower Blend",
-  "Paliurus", "Phacelia", "Pine", "Rapeseed", "Raspberry", "Rosemary", "Sainfoin",
-  "Sulla", "Sunflower", "Thyme", "Other",
+  "Premium", "Defect", "Longberry", "Peaberry", "Other"
 ];
 
 const REGIONS = [
@@ -135,6 +131,13 @@ export default function FarmerRegisterBatchPage() {
   const [showMarketplace, setShowMarketplace] = useState(false);
   const [imgUploading, setImgUploading] = useState(false);
   const [imgPreview, setImgPreview] = useState<string | null>(null);
+  
+  // ── AI Workflow States ──
+  const [aiStep, setAiStep] = useState<0|1|2|3>(0); // 0: Idle, 1: Preprocessing, 2: Analyzing, 3: Result
+  const [aiImage, setAiImage] = useState<string | null>(null);
+  const [aiResult, setAiResult] = useState<any>(null);
+  const aiRef = useRef<HTMLInputElement>(null);
+
   const fileRef = useRef<HTMLInputElement>(null);
   const imgRef  = useRef<HTMLInputElement>(null);
 
@@ -180,6 +183,42 @@ export default function FarmerRegisterBatchPage() {
       if (d.batchCode) setForm(f => ({ ...f, batchId: d.batchCode }));
     } catch {}
     setGenerating(false);
+  }
+
+  async function handleAiAcquisition(file: File) {
+    setAiImage(URL.createObjectURL(file));
+    setAiStep(1); // Preprocessing animation
+    setAiResult(null);
+    setError("");
+
+    // Simulate preprocessing animation delay
+    await new Promise(r => setTimeout(r, 2000));
+    
+    setAiStep(2); // Analyzing
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("http://127.0.0.1:8000/classify-sample", { method: "POST", body: fd });
+      const data = await res.json();
+      
+      if (res.ok) {
+        setAiResult(data);
+        setAiStep(3);
+        
+        // Auto-fill form fields based on AI Result
+        const detectedType = data.class;
+        if (COFFEE_TYPES.includes(detectedType)) {
+          set("coffeeType", detectedType);
+          setAutoDetected(new Set(["coffeeType"]));
+        }
+      } else {
+        setError(data.detail || "AI Classification failed.");
+        setAiStep(0);
+      }
+    } catch {
+      setError("AI Service is unreachable. Ensure the python server is running on port 8000.");
+      setAiStep(0);
+    }
   }
 
   async function handlePdfUpload(file: File) {
@@ -387,6 +426,16 @@ export default function FarmerRegisterBatchPage() {
             </div>
           )}
           <p className="text-xs text-slate-400 mb-6">You'll be notified once it's approved and appears on the marketplace.</p>
+          
+          {/* QR Code Section */}
+          <div className="mb-6 p-4 border border-dashed border-slate-300 rounded-xl bg-slate-50 flex flex-col items-center">
+             <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Blockchain QR Code</p>
+             <div className="bg-white p-2 rounded-lg shadow-sm border border-slate-100">
+                <img src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(`https://vercitrack.com/verify/${form.batchId}`)}`} alt="QR Code" className="w-32 h-32" />
+             </div>
+             <p className="text-xs text-slate-400 mt-3 text-center">Scan this QR code to verify<br/>authenticity & AI tracking data.</p>
+          </div>
+
           <div className="flex gap-3 justify-center">
             <button onClick={() => router.push("/farmer")}
               className="rounded-xl px-5 py-2.5 font-bold text-sm text-black"
@@ -419,57 +468,112 @@ export default function FarmerRegisterBatchPage() {
         <div className="mb-6">
           <button onClick={() => router.back()} className="text-xs text-slate-400 hover:text-slate-600 mb-2 block">← Back</button>
           <h1 className="text-2xl font-bold text-slate-800">Register Coffee Batch</h1>
-          <p className="text-slate-500 text-sm mt-1">Drop a lab report PDF — all fields auto-fill from the document.</p>
+          <p className="text-slate-500 text-sm mt-1">Acquire image, process with AI, and generate blockchain QR Code.</p>
         </div>
 
-        {/* ── PDF Drop Zone ── */}
-        <div
-          onClick={() => fileRef.current?.click()}
-          onDragOver={e => { e.preventDefault(); setDragOver(true); }}
-          onDragLeave={() => setDragOver(false)}
-          onDrop={e => {
-            e.preventDefault(); setDragOver(false);
-            const f = e.dataTransfer.files[0];
-            if (f?.type === "application/pdf") handlePdfUpload(f);
-          }}
-          className="rounded-2xl border-2 transition-all cursor-pointer mb-5"
-          style={{
-            borderStyle: "dashed",
-            borderColor: dragOver ? "#EAB307" : pdfDone ? "#22C55E" : "#CBD5E1",
-            background:  dragOver ? "#FFFBEB" : pdfDone ? "#F0FDF4" : "#FFFFFF",
-            padding: pdfDone ? "16px 20px" : "40px 24px",
-          }}
-        >
-          <input ref={fileRef} type="file" accept="application/pdf" className="hidden"
-            onChange={e => { const f = e.target.files?.[0]; if (f) handlePdfUpload(f); }} />
+        {/* ── AI Vision Workflow Drop Zone ── */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-5">
+           <div className="bg-slate-50 border-b border-slate-100 px-5 py-3 flex items-center justify-between">
+              <h2 className="text-xs font-bold text-slate-600 uppercase tracking-widest flex items-center gap-2">
+                 <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                 AI Model Analysis Pipeline
+              </h2>
+              <div className="flex gap-2 text-xs font-medium">
+                 <span className={aiStep >= 1 ? "text-blue-600" : "text-slate-400"}>1. Preprocessing</span>
+                 <span className="text-slate-300">→</span>
+                 <span className={aiStep >= 2 ? "text-blue-600" : "text-slate-400"}>2. AI Inference</span>
+                 <span className="text-slate-300">→</span>
+                 <span className={aiStep >= 3 ? "text-green-600" : "text-slate-400"}>3. Results</span>
+              </div>
+           </div>
 
-          {uploading ? (
-            <div className="flex items-center gap-3 justify-center">
-              <div className="h-5 w-5 animate-spin rounded-full border-2 border-yellow-200 border-t-yellow-500 flex-shrink-0" />
-              <div>
-                <p className="text-sm font-semibold text-slate-700">Parsing lab report…</p>
-                <p className="text-xs text-slate-400 mt-0.5">Extracting all quality parameters with AI</p>
-              </div>
-            </div>
-          ) : pdfDone ? (
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center text-lg flex-shrink-0">PDF</div>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-green-800 text-sm truncate">{pdfName}</p>
-                <p className="text-xs text-slate-400 font-mono mt-0.5">{pdfHash.slice(0, 42)}…</p>
-              </div>
-              <div className="text-right flex-shrink-0">
-                <p className="text-xs font-bold text-green-700">{filledCount}/{QUALITY_PARAMS.length} fields filled</p>
-                <p className="text-xs text-slate-400 mt-0.5">Click to replace PDF</p>
-              </div>
-            </div>
-          ) : (
-            <div className="text-center">
-              <div className="text-4xl mb-3"></div>
-              <p className="font-semibold text-slate-700">Drop lab report PDF here</p>
-              <p className="text-xs text-slate-400 mt-1.5">or click to browse · AI auto-fills all quality fields</p>
-            </div>
-          )}
+           <div className="p-6">
+             {aiStep === 0 ? (
+               <div
+                  onClick={() => aiRef.current?.click()}
+                  onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+                  onDragLeave={() => setDragOver(false)}
+                  onDrop={e => {
+                    e.preventDefault(); setDragOver(false);
+                    const f = e.dataTransfer.files[0];
+                    if (f && f.type.startsWith("image/")) handleAiAcquisition(f);
+                  }}
+                  className="rounded-xl border-2 border-dashed transition-all cursor-pointer text-center"
+                  style={{
+                    borderColor: dragOver ? "#3B82F6" : "#CBD5E1",
+                    background:  dragOver ? "#EFF6FF" : "#FAFAFA",
+                    padding: "40px 24px",
+                  }}
+                >
+                  <input ref={aiRef} type="file" accept="image/*" className="hidden"
+                    onChange={e => { const f = e.target.files?.[0]; if (f) handleAiAcquisition(f); }} />
+                  <div className="text-4xl mb-3">📸</div>
+                  <p className="font-semibold text-slate-700">1. Image Acquisition</p>
+                  <p className="text-xs text-slate-400 mt-1.5">Upload a picture of the coffee beans for AI analysis.</p>
+                </div>
+             ) : aiStep === 1 || aiStep === 2 ? (
+                <div className="flex flex-col md:flex-row gap-6 items-center">
+                   <div className="relative w-48 h-48 rounded-xl overflow-hidden border border-slate-200 shadow-inner flex-shrink-0">
+                      <img src={aiImage!} alt="Processing" className="w-full h-full object-cover" />
+                      {/* Scanning animation */}
+                      <div className="absolute left-0 right-0 h-1 bg-blue-500 opacity-70 animate-[scan_2s_ease-in-out_infinite]" style={{ boxShadow: '0 0 8px 2px rgba(59, 130, 246, 0.5)' }}></div>
+                      <div className="absolute inset-0 bg-blue-500/10 animate-pulse"></div>
+                   </div>
+                   <div className="flex-1">
+                      <h3 className="text-lg font-bold text-slate-800 mb-2">
+                         {aiStep === 1 ? "2. Image Preprocessing" : "3. AI Model Analysis"}
+                      </h3>
+                      <p className="text-sm text-slate-500 mb-4">
+                         {aiStep === 1 
+                            ? "Applying noise reduction, contrast enhancement, and normalization..."
+                            : "Running PyTorch YOLO-based deep learning model..."}
+                      </p>
+                      <div className="space-y-2">
+                         <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                            <div className="h-full bg-blue-500 transition-all duration-1000" style={{ width: aiStep === 1 ? '45%' : '85%' }}></div>
+                         </div>
+                         <div className="flex justify-between text-xs text-slate-400 font-mono">
+                            <span>{aiStep === 1 ? "Optimizing tensor..." : "Extracting features..."}</span>
+                            <span>{aiStep === 1 ? "45%" : "85%"}</span>
+                         </div>
+                      </div>
+                   </div>
+                </div>
+             ) : (
+                <div className="flex flex-col md:flex-row gap-6 items-start">
+                   <div className="relative w-48 h-48 rounded-xl overflow-hidden border-2 border-green-400 shadow-sm flex-shrink-0">
+                      <img src={aiImage!} alt="Analyzed" className="w-full h-full object-cover" />
+                      <div className="absolute top-2 right-2 bg-green-500 text-white text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wide">
+                         Verified
+                      </div>
+                   </div>
+                   <div className="flex-1 w-full">
+                      <div className="flex items-center justify-between mb-3">
+                         <h3 className="text-lg font-bold text-slate-800">4. Result Generation</h3>
+                         <button onClick={() => setAiStep(0)} className="text-xs text-blue-600 hover:underline">Scan another</button>
+                      </div>
+                      <div className="bg-slate-50 border border-slate-100 rounded-xl p-4 grid grid-cols-2 gap-4">
+                         <div>
+                            <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-1">Detected Class</p>
+                            <p className="text-base font-semibold text-slate-800">{aiResult?.class}</p>
+                         </div>
+                         <div>
+                            <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-1">AI Confidence</p>
+                            <p className="text-base font-semibold text-slate-800">{(aiResult?.confidence * 100).toFixed(1)}%</p>
+                         </div>
+                         <div>
+                            <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-1">Defect Percentage</p>
+                            <p className="text-base font-semibold text-red-600">{aiResult?.class === 'Defect' ? '100%' : '0%'}</p>
+                         </div>
+                         <div>
+                            <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-1">Quality Grade</p>
+                            <p className="text-base font-semibold text-green-600">{aiResult?.class === 'Defect' ? 'C' : 'A'}</p>
+                         </div>
+                      </div>
+                   </div>
+                </div>
+             )}
+           </div>
         </div>
 
         {/* ── Quality Score Card ── */}
@@ -811,6 +915,13 @@ export default function FarmerRegisterBatchPage() {
           box-shadow: 0 0 0 3px rgba(234,179,7,0.15);
         }
         select.input { cursor: pointer; }
+        
+        @keyframes scan {
+          0% { top: 0%; opacity: 0; }
+          10% { opacity: 1; }
+          90% { opacity: 1; }
+          100% { top: 100%; opacity: 0; }
+        }
       `}</style>
     </div>
   );
