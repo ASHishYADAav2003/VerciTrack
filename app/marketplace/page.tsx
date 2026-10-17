@@ -69,13 +69,13 @@ export default function MarketplacePage() {
 
     // 1. On-chain
     try {
-      const client = createPublicClient({
+      const client: any = createPublicClient({
         chain: hardhatLocalhost,
         transport: http("http://127.0.0.1:8545"),
       });
       const ids = (await client.readContract({
         address: CONTRACT_ADDRESS,
-        abi: CONTRACT_ABI,
+        abi: CONTRACT_ABI as any,
         functionName: "getAllBatchIds" as const,
         args: [],
       })) as string[];

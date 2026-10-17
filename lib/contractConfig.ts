@@ -37,7 +37,7 @@ export const RPC_URL       = CHAIN === "sepolia"
 
 // ── Contract addresses ─────────────────────────────────────────────────────────
 // Auto-updated by scripts/deploy.ts after every `npm run chain`
-const LOCAL_CONTRACT_ADDRESS   = "0x5fbdb2315678afecb367f032d93f642f64180aa3" as `0x${string}`;
+const LOCAL_CONTRACT_ADDRESS   = "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e" as `0x${string}`;
 // Set by scripts/deploy-sepolia.ts after first Sepolia deploy — commit this value
 const SEPOLIA_CONTRACT_ADDRESS = "" as `0x${string}`;
 

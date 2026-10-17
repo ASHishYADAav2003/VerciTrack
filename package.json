@@ -8,11 +8,13 @@
     "start": "next start",
     "lint": "eslint",
     "chain": "bash scripts/start-chain.sh",
+    "seed": "node --env-file=.env ./node_modules/.bin/tsx scripts/seed-data.ts",
     "deploy:sepolia": "npx hardhat compile && npx tsx scripts/deploy-sepolia.ts",
-    "test:contract": "npx hardhat compile && npx hardhat test"
+    "test:contract": "npx hardhat compile && npx tsx --test blockchain/test/CoffeeTraceability.test.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.100.1",
+    "ethers": "^6.16.0",
     "@prisma/client": "^6.4.1",
     "caniuse-lite": "^1.0.30001802",
     "dotenv": "^17.4.2",

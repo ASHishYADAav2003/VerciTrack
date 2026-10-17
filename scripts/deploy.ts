@@ -41,7 +41,7 @@ async function main() {
   const configPath = join(process.cwd(), "lib", "contractConfig.ts");
   let config = readFileSync(configPath, "utf-8");
   config = config.replace(
-    /(export const CONTRACT_ADDRESS\s*=\s*\n?\s*)"0x[a-fA-F0-9]+" as/,
+    /(const LOCAL_CONTRACT_ADDRESS\s*=\s*)"0x[a-fA-F0-9]+" as/,
     `$1"${address}" as`
   );
   writeFileSync(configPath, config);

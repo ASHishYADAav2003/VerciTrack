@@ -1,7 +1,7 @@
 "use client";
 // app/admin/register-batch/page.tsx — PDF-first batch registration for admins
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createWalletClient, createPublicClient, custom, http } from "viem";
 import { CONTRACT_ADDRESS, CONTRACT_ABI, activeChain, RPC_URL } from "@/lib/contractConfig";
@@ -219,7 +219,7 @@ function ExtSection({ title, hint, children, defaultOpen, forceOpen }: { title: 
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export default function AdminRegisterBatchPage() {
+function AdminRegisterBatchForm() {
   const router       = useRouter();
   const searchParams = useSearchParams();
   const editMode     = searchParams.get("edit") !== null;
@@ -1738,5 +1738,13 @@ export default function AdminRegisterBatchPage() {
         select.input { cursor: pointer; }
       `}</style>
     </div>
+  );
+}
+
+export default function AdminRegisterBatchPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-slate-50 flex items-center justify-center text-slate-500">Loading...</div>}>
+      <AdminRegisterBatchForm />
+    </Suspense>
   );
 }

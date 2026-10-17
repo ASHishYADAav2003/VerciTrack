@@ -501,7 +501,7 @@ export default function BatchApprovalsPage() {
             )}
 
             {[
-              ['Batch ID',     <span className="mono">{modal.batchId}</span>],
+              ['Batch ID',     <span key="batch-id" className="mono">{modal.batchId}</span>],
               ['Name',         modal.name],
               ['Farmer',    modal.farmerName],
               ['Origin',       modal.origin],

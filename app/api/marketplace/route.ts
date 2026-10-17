@@ -32,7 +32,7 @@ function decode(x: bigint | undefined | null): number | null {
 }
 
 // Build a full batch record from contract reads + sidecar extras
-async function fetchBatch(client: ReturnType<typeof publicClient>, batchId: string, extras: Record<string, any>) {
+async function fetchBatch(client: any, batchId: string, extras: Record<string, any>) {
   const [core, quality, listing] = await Promise.all([
     client.readContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: "getBatchCore",    args: [batchId] }),
     client.readContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: "getBatchQuality", args: [batchId] }),
@@ -114,7 +114,7 @@ export async function GET(req: NextRequest) {
   if (cached) return NextResponse.json(cached);
 
   try {
-    const client  = publicClient();
+    const client  = publicClient() as any;
     const [allIds, extras, orders] = await Promise.all([
       client.readContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: "getAllBatchIds", args: [] }) as Promise<string[]>,
       readExtras(),

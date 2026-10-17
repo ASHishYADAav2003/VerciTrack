@@ -83,14 +83,14 @@ export default function AllBatchesPage() {
     setLoading(true)
     try {
       const client = createPublicClient({ chain: activeChain, transport: http(RPC_URL) })
-      const ids = await client.readContract({ address: CONTRACT_ADDRESS as `0x${string}`, abi: CONTRACT_ABI, functionName: 'getAllBatchIds' }) as string[]
+      const ids = await (client.readContract as any)({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'getAllBatchIds', args: [] }) as string[]
 
       const results = await Promise.all(ids.map(async (id) => {
-        const [core, metrics] = await Promise.all([
-          client.readContract({ address: CONTRACT_ADDRESS as `0x${string}`, abi: CONTRACT_ABI, functionName: 'getBatchCore', args: [id] }),
-          client.readContract({ address: CONTRACT_ADDRESS as `0x${string}`, abi: CONTRACT_ABI, functionName: 'getBatchMetrics', args: [id] }),
-        ]) as [any, any]
-        const quality = await client.readContract({ address: CONTRACT_ADDRESS as `0x${string}`, abi: CONTRACT_ABI, functionName: 'getQualityStatus', args: [id] }) as string
+        const [core, metrics, quality] = await Promise.all([
+          (client.readContract as any)({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'getBatchCore', args: [id] }),
+          (client.readContract as any)({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'getBatchMetrics', args: [id] }),
+          (client.readContract as any)({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'getBatchQuality', args: [id] }),
+        ]) as [any, any, any]
         const offchainMatch = offchain.find(b => b.batchId === id)
         return {
           batchId: id,
@@ -102,7 +102,7 @@ export default function AllBatchesPage() {
           hmf: (Number(metrics[1]) / 10).toFixed(1),
           colour: Number(metrics[2]),
           harvestYear: Number(metrics[3]),
-          qualityStatus: quality,
+          qualityStatus: quality[1] || 'Passed',
           onChain: true,
           approvalStatus: offchainMatch?.approvalStatus || 'pending',
         }

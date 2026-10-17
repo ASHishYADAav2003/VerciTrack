@@ -78,8 +78,9 @@ async function registerBatchOnChain(batch: any): Promise<void> {
     sc(batch.isotopicDiff,   100),
   ];
 
-  const hash = await wallet.writeContract({
+  const hash = await (wallet.writeContract as any)({
     address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: "registerBatch",
+    chain: activeChain,
     args: [
       batch.batchId,
       batch.farmerName,
@@ -121,7 +122,7 @@ export async function GET(req: NextRequest) {
   let blockchainBatches: any[] = [];
   let chainError = false;
   try {
-    const client = publicClient();
+    const client = publicClient() as any;
     const allIds = await client.readContract({
       address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: "getAllBatchIds", args: [],
     }) as string[];

@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
     const batchPredictions = records.map(r => {
       const pred = predictQuality({
         batchId:        r.batchId,
-        humidity:       r.params.humidity,
+        humidity:       (r.params as any).humidity ?? r.params.water,
         hmf:            r.params.hmf,
         diastase:       r.params.diastase,
         freeAcidity:    r.params.freeAcidity,
@@ -69,9 +69,8 @@ export async function GET(req: NextRequest) {
         cadmiumCd:      r.params.cadmiumCd,
         pesticideScreen: r.params.pesticideScreen,
         antibioticScreen: r.params.antibioticScreen,
-        altitude:       r.params.altitude,
-        harvestMonth:   r.params.harvestMonth,
-        dpph:           r.params.dpph,
+        altitude:       r.altitude,
+        harvestMonth:   r.harvestMonth,
       });
       // Rule score from stored ML record (computed at registration time)
       const mlRec   = mlRecords.find(m => m.batchId === r.batchId);

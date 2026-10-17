@@ -63,10 +63,11 @@ async function main() {
   const wallet = createWalletClient({ account, chain: sepolia, transport: http(RPC_URL) });
 
   console.log("\nDeploying CoffeeTraceability to Sepolia...");
-  const hash = await wallet.deployContract({
+  const hash = await (wallet as any).deployContract({
     abi: artifact.abi,
     bytecode: artifact.bytecode as `0x${string}`,
     account,
+    chain: sepolia,
   });
 
   console.log(`Transaction: https://sepolia.etherscan.io/tx/${hash}`);
